@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Визитка ВК</title>
+    <!-- Tailwind для красоты -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- VK Bridge — критически важен для работы внутри ВК -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <style>
+        body {
+            background-color: #f7f8fa;
+            font-family: -apple-system, system-ui, "Helvetica Neue", Roboto, sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-content" class="bg-white w-full max-w-sm rounded-3xl shadow-lg p-10 text-center mx-4 opacity-0 transition-opacity duration-700">
+        <div class="mb-6">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        </div>
+
+        <h1 class="text-xl font-bold text-gray-900 mb-2">Успешное соединение!</h1>
+        <p class="text-gray-500 text-sm mb-8">
+            Приложение успешно инициализировано в экосистеме ВКонтакте.
+        </p>
+
+        <a href="https://vk.com/club236583163" 
+           class="inline-block w-full py-4 bg-[#0077ff] text-white font-medium rounded-2xl shadow-md active:scale-95 transition-all">
+            Перейти в сообщество
+        </a>
+    </div>
+
+    <script>
+        // Функция инициализации
+        async function initApp() {
+            try {
+                // Отправляем сигнал ВК, что мы загрузились
+                await vkBridge.send("VKWebAppInit", {});
+                
+                // Если все ок, показываем контент
+                document.getElementById('app-content').classList.remove('opacity-0');
+                console.log("VK Bridge Success");
+            } catch (error) {
+                console.error("VK Bridge Error", error);
+                // Даже если ошибка, все равно покажем контент для теста
+                document.getElementById('app-content').classList.remove('opacity-0');
+            }
+        }
+
+        // Запускаем при загрузке страницы
+        window.onload = initApp;
+    </script>
+</body>
+</html>
