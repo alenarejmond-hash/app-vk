@@ -3,870 +3,686 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Психолог | Telegram Mini App</title>
+    <title>Твой тревел-эксперт</title>
     
-    <!-- Telegram Web App -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <!-- React & ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Tailwind CSS -->
+    <!-- Подключаем Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Подключаем React -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Tailwind Config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        sage: '#A3B1A6',
-                        'sage-light': '#D6DDD8',
-                        sand: '#F4F1EA',
-                        cream: '#FCFBFA',
-                        graphite: '#363636',
-                    },
-                    fontFamily: {
-                        serif: ['Lora', 'serif'],
-                        sans: ['Montserrat', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'soft': '0 8px 32px -8px rgba(163, 177, 166, 0.3)',
-                        'glass': '0 4px 30px rgba(0, 0, 0, 0.05)',
-                    },
-                    animation: {
-                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Подключаем SDK и Парсер -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <!-- Современный шрифт как на макете -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* 🛠 ВАЙБОВЫЙ ФИКС 2: Жесткая фиксация экрана (убираем "резинку" и прыжки) */
-        html, body {
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
             overscroll-behavior-y: none;
-            background-color: #F4F1EA;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
+            background-color: #000;
+            color: #fff;
         }
-        /* Оставляем возможность писать текст в форме отзывов */
-        input, textarea {
-            -webkit-user-select: auto;
-            user-select: auto;
-        }
-        /* Убираем скроллбар для эстетики карусели */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+
+        /* --- ЭФФЕКТ МАТОВОГО СТЕКЛА --- */
+        /* 👇 НАСТРОЙКА ДЛЯ ВАЙБКОДЕРА: МЕНЯЙ ПРОЗРАЧНОСТЬ И МУТНОСТЬ СТЕКЛА ЗДЕСЬ 👇 */
         .glass-panel {
-            background: rgba(252, 251, 250, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
+            /* Прозрачность белого фона (0.15 = 15%). Можешь менять от 0.0 (полностью прозрачно) до 1.0 (сплошной белый) */
+            background: rgba(255, 255, 255, 0.15);
+            
+            /* Сила мутности (сейчас 24px). Чем больше цифра, тем сильнее размыт задний фон */
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            
+            /* Фикс от мерцания: заставляет телефон сразу прогружать мутность без скачков при анимации */
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+
+            /* ✨ НОВОЕ: Плавное появление мутности, как задуманная фишка ✨ */
+            /* 👇 ВРЕМЯ ПОЯВЛЕНИЯ: сейчас 4s (4 секунды). Можно сделать 2s (быстрее) или 6s (еще медленнее) 👇 */
+            animation: slowGlassBlur 4s ease-out forwards;
+        }
+
+        /* 👇 Если будешь менять мутность (24px) или прозрачность (0.15), поменяй их и здесь в 100% 👇 */
+        @keyframes slowGlassBlur {
+            0% {
+                backdrop-filter: blur(0px);
+                -webkit-backdrop-filter: blur(0px);
+                background: rgba(255, 255, 255, 0);
+            }
+            40% {
+                /* Ждем пока карточка выезжает вверх, оставаясь прозрачной */
+                backdrop-filter: blur(0px);
+                -webkit-backdrop-filter: blur(0px);
+                background: rgba(255, 255, 255, 0);
+            }
+            100% {
+                /* Плавно становимся мутными */
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+                background: rgba(255, 255, 255, 0.15);
+            }
+        }
+        
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Анимации */
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(40px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        .animate-item {
+            animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .animate-fade {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        /* Убираем скроллбар */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .app-container {
+            min-height: 100dvh;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+            background-color: #111;
+        }
+
+        /* Фиксированный фон для внутренних страниц */
+        .fixed-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .fixed-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(30px) brightness(0.4);
+            transform: scale(1.1); /* Убираем белые края от размытия */
         }
     </style>
 </head>
-<body class="text-graphite font-sans antialiased overflow-x-hidden" oncontextmenu="return false;">
+<body>
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- Lucide Icons (SVG) ---
-        const Heart = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>;
-        const Leaf = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>;
-        const Sparkles = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
-        const MessageCircle = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>;
-        const X = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
-        const Calendar = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
-        const QrCode = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>;
-
-        // ==========================================
-        // 🛠 БЛОК НАСТРОЕК (МЕНЯТЬ ТОЛЬКО ЗДЕСЬ) 🛠
-        // ==========================================
+        // =========================================================================
+        // 👇👇👇 НАСТРОЙКИ ДЛЯ ВАЙБКОДЕРА (МЕНЯЙ ТЕКСТ И ССЫЛКИ ТОЛЬКО ЗДЕСЬ) 👇👇👇
+        //
+        // ШПАРГАЛКА ПО РАЗМЕРАМ ШРИФТА (Tailwind CSS):
+        // text-xs (очень маленький), text-sm (маленький), text-base (стандартный), 
+        // text-lg (большой), text-xl, text-2xl, text-3xl, text-4xl (огромный)
+        // Можно писать свои значения в скобках: text-[15px], text-[20px]
+        // =========================================================================
         const CONFIG = {
-            // 1. Главный экран (Hero)
-            hero: {
-                name: "Александра Вейс",
-                description: "Помогаю обрести внутреннюю опору и гармонию",
-                photoUrl: "https://i.postimg.cc/j54xwpZm/unnamed-11.jpg",
-            },
-            
-            // 2. Ссылки
-            links: {
-                telegram: "https://t.me/telegram", // Для записи и кнопки "Написать мне"
-                telegramChannel: "https://t.me/telegram_channel", // Ссылка для кнопки "Мой канал"
-                qrCodeUrl: "https://i.postimg.cc/tgyzs0Sj/Remove-background-project-(1).png", // ⭐️ Ссылка на картинку с QR-кодом
-                freebieUrl: "#", // Ссылка на пост/файл
-                freebieTitle: "Полезное (Free)",
-                freebieSubtitle: "Гайд \"Снижение тревожности\"",
+            // --- 1. ГЛАВНАЯ СТРАНИЦА ---
+            brandName: "Елена Майер", // Имя на главном экране
+            subtitle: "Незабываемые авторские туры", // ✨ НОВОЕ: Подзаголовок под именем
+            avatarUrl: "https://i.postimg.cc/qRP5mKJS/unnamed-6.jpg", // 🖼️ ССЫЛКА НА ФОТО: Большое фото на фоне
+            mainButtonText: "Горящие туры", // Текст на большой кнопке
+            mainButtonImage: "https://images.unsplash.com/photo-1499678329028-101435549a4e?auto=format&fit=crop&q=80&w=800", // 🖼️ ССЫЛКА НА ФОТО: Фон для кнопки "Горящие туры"
+
+            // СТАТИСТИКА (цифры под именем на главной)
+            stats: {
+                toursCount: "150+",   // Количество туров
+                clientsCount: "5k+",  // Количество клиентов
+                rating: "5.0"         // Твой рейтинг
             },
 
-            // ==========================================
-            // ⭐️ НОВЫЙ РАЗДЕЛ: ПОЛЕЗНОЕ (ЛИД-МАГНИТЫ) ⭐️
-            // Добавляй свои гайды сюда. Если хочешь добавить еще один — просто 
-            // скопируй блок в фигурных скобках {...} и вставь через запятую!
-            // ==========================================
-            freebies: [
-                { 
-                    title: "Гайд по самопомощи", 
-                    subtitle: "Снижение тревожности за 10 минут", 
-                    url: "https://t.me/telegram_channel/1" // Ссылка на пост с гайдом
-                },
-                { 
-                    title: "Медитация на сон", 
-                    subtitle: "Аудио-практика для глубокого расслабления", 
-                    url: "https://t.me/telegram_channel/2" // Ссылка на аудио/пост
-                },
-                { 
-                    title: "Тест на уровень стресса", 
-                    subtitle: "Узнай свое состояние прямо сейчас", 
-                    url: "https://t.me/telegram_channel/3" // Ссылка на бота или тест
-                },
-                { 
-                    title: "Чек-лист: Личные границы", 
-                    subtitle: "Как говорить «нет» без чувства вины", 
-                    url: "https://t.me/telegram_channel/4" 
-                }
-            ],
+            // --- 2. КАРТИНКИ ДЛЯ КВАДРАТНЫХ КНОПОК МЕНЮ ---
+            menuImages: {
+                about: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=400", // 🖼️ ССЫЛКА НА ФОТО: Кнопка "Обо мне"
+                reviews: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&q=80&w=300", // 🖼️ ССЫЛКА НА ФОТО: Кнопка "Отзывы"
+                contacts: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&q=80&w=300" // 🖼️ ССЫЛКА НА ФОТО: Кнопка "Контакты"
+            },
 
-            // 3. Блок "Обо мне"
+            // --- 3. ТЕКСТ "ОБО МНЕ" ---
             about: {
                 title: "Обо мне",
-                paragraphs: [
-                    "Привет! Меня зовут Александра. В психологии я уже более 6 лет.",
-                    "Мой подход основан на бережном отношении к чувствам клиента. Я не даю советов, как \"правильно\" жить, но помогаю подсветить ваши сильные стороны и найти выход из сложных состояний.",
-                    "Верю, что каждый человек уже обладает всеми нужными ресурсами для счастья. Моя задача — помочь вам их распаковать."
-                ],
-                quote: "Изменения начинаются с принятия себя"
+                text: "Привет! Я твой личный тревел-эксперт. Я помогаю людям находить идеальные места для отдыха, организую незабываемые туры и беру всю рутину с документами на себя. Моя цель — сделать так, чтобы ты просто собрал чемодан и наслаждался отпуском!"
             },
 
-            // 4. С чем я работаю (карточки)
-            expertise: [
-                { title: "Тревога", message: "Я помогу тебе найти островок спокойствия внутри себя с помощью бережных техник." },
-                { title: "Отношения", message: "Разберемся в сложных сценариях и научимся выстраивать теплые, здоровые связи." },
-                { title: "Самооценка", message: "Бережно подсветим твою ценность и вернем уверенность в своих силах." },
-                { title: "Выгорание", message: "Найдем, куда уходит энергия, и шаг за шагом восстановим твой внутренний ресурс." },
-                { title: "Поиск себя", message: "Услышим твои истинные желания и проложим путь к жизни, которая тебе по душе." }
-            ],
-
-            // 5. Кнопка состояния (эмодзи и ответы - 51 вариант!)
-            supportMessages: {
-                '😔': [
-                    "Грустить — это нормально. Позволь себе прожить эти эмоции, я рядом.",
-                    "Твои чувства важны. Дай себе столько времени, сколько нужно, чтобы пережить это.",
-                    "Даже в самые темные дни помни: тучи обязательно рассеются.",
-                    "Обнимаю тебя. Сейчас может быть тяжело, но ты справишься.",
-                    "Не требуй от себя многого сегодня. Просто отдохни и побудь с собой.",
-                    "Плакать можно. Это помогает душе очиститься от тяжести.",
-                    "Ты не одинок(а) в своих переживаниях. Я мысленно держу тебя за руку.",
-                    "Каждое твое чувство имеет право на существование. Дыши.",
-                    "Завтра будет новый день, а сегодня просто позволь себе быть не в ресурсе.",
-                    "Разреши себе снять броню. Тебе не нужно всегда быть сильным(ой).",
-                    "Твоя грусть говорит о том, что тебе не всё равно. Это проявление любви к себе.",
-                    "Маленькими шагами. Сегодня твой шаг — просто разрешить себе погрустить.",
-                    "Я слышу твою боль. Ты имеешь полное право чувствовать то, что чувствуешь.",
-                    "Это состояние временно. Оно пройдет, как проходит зима.",
-                    "Попробуй обнять себя за плечи прямо сейчас. Ты — свой самый близкий человек.",
-                    "Тебе не нужно оправдываться за свою грусть. Просто побудь в тишине.",
-                    "Иногда самое продуктивное, что можно сделать — это лечь и отдохнуть."
-                ],
-                '😰': [
-                    "Сделай медленный вдох. Ты в безопасности. Тревога — это просто волна, она уйдёт.",
-                    "Вдохни на 4 счета, выдохни на 6. Прямо сейчас тебе ничего не угрожает.",
-                    "Эта тревога — ложная тревога. Твой мозг пытается тебя защитить, но ты в безопасности.",
-                    "Оглянись вокруг: назови 5 предметов, которые ты сейчас видишь. Вернись в реальность.",
-                    "Ты больше, чем твоя тревога. Она пройдет, а ты останешься.",
-                    "Позволь плечам опуститься. Разожми челюсть. Выдохни напряжение.",
-                    "То, что тебя пугает сейчас, вряд ли случится. Возвращайся в момент 'здесь и сейчас'.",
-                    "Страх питается твоими мыслями. Давай попробуем переключить внимание на тело.",
-                    "Тревога любит будущее, а жизнь происходит в настоящем. Что ты чувствуешь прямо сейчас?",
-                    "Представь свою тревогу как облако, которое медленно проплывает мимо.",
-                    "Я рядом. Эта буря внутри скоро утихнет, просто продолжай дышать.",
-                    "Ничего страшного не происходит прямо в эту секунду. Заземлись.",
-                    "Ты уже справлялся(лась) с этим раньше. Справишься и сейчас.",
-                    "Почувствуй опору под ногами. Земля держит тебя, ты не упадешь.",
-                    "Отложи мысли на потом. Сейчас твоя единственная задача — спокойно дышать.",
-                    "Переведи фокус на свои руки: сожми и разожми кулаки несколько раз.",
-                    "Тревога громко кричит, но она часто врет. Не верь ей сейчас."
-                ],
-                '🙂': [
-                    "Замечательно! Сохрани этот свет внутри себя на весь день.",
-                    "Я очень рада за тебя! Пусть это состояние длится как можно дольше.",
-                    "Заметь это чувство. Как оно отзывается в теле? Запомни его.",
-                    "Твоя улыбка — это прекрасно. Продолжай светить!",
-                    "Ты молодец! Разреши себе искренне насладиться этим моментом.",
-                    "Это твой ресурс. Черпай из него силы для новых свершений.",
-                    "Как здорово! Пусть этот день принесет тебе еще больше приятных сюрпризов.",
-                    "Поблагодари себя за то, что пришел(ла) к этому светлому состоянию.",
-                    "Зафиксируй эту радость. Она — твое топливо на пути к целям.",
-                    "Ты заслуживаешь этого спокойствия и счастья. Впитывай каждую каплю!",
-                    "Чудесно! Поделись этим теплом с миром, и оно вернется вдвойне.",
-                    "Твоя гармония — результат твоей внутренней работы. Горжусь тобой!",
-                    "Пусть эта легкость сопровождает тебя в каждом деле сегодня.",
-                    "Радость в мелочах. Здорово, что ты умеешь ее замечать!",
-                    "Сохрани этот 'снимок' хорошего настроения в памяти на случай пасмурных дней.",
-                    "Дышится легко, правда? Наслаждайся этим чувством свободы.",
-                    "Прекрасный настрой! Мир сегодня точно на твоей стороне."
-                ]
+            // --- 4. ТВОИ КОНТАКТЫ (ССЫЛКИ И ТЕЛЕФОН) ---
+            contacts: {
+                telegram: "https://t.me/aicreata", // ✈️ ССЫЛКА НА ТВОЙ ТЕЛЕГРАМ
+                instagram: "https://instagram.com/instagram", // 📸 ССЫЛКА НА ТВОЙ INSTAGRAM
+                phone: "+7 (999) 123-45-67" // Твой номер телефона
             },
 
-            // 6. СВЯЗЬ С ТАБЛИЦЕЙ
-            // 6.1. Ссылка на скрипт (ДЛЯ ОТПРАВКИ новых отзывов в карантин)
-            googleScriptUrl: "https://script.google.com/macros/s/AKfycbxjMAQoFuQHrCPD3v1JuhBn0kSQOo4QsP7jtsM5LLN-jZlJvK4Doi45KJluuarkb0RW/exec", 
-            
-            // 6.2. Ссылка на саму таблицу (ДЛЯ ПРЯМОГО ЧТЕНИЯ опубликованных)
-            // ⚠️ ВАЖНО: В настройках таблицы (кнопка "Поделиться" справа сверху) 
-            // должен стоять доступ "Все, у кого есть ссылка" -> "Читатель".
-            googleSheetUrl: "https://docs.google.com/spreadsheets/d/1ii-0VEFRxh4g7XdZh676zLAKPy0NDJDEBrjSsEygAEc/edit?gid=0#gid=0",
-
-            // 7. Дефолтные отзывы (если таблица не подключена или пустая)
-            defaultReviews: [
-                { id: 1, name: "Анна М.", text: "Бережный подход и невероятное чувство такта. После сессий уходит тяжесть, появляется ясность.", rating: 5 },
-                { id: 2, name: "Елена В.", text: "Научилась слышать себя и отстаивать границы без чувства вины. Спасибо за эту трансформацию!", rating: 5 },
-                { id: 3, name: "Михаил С.", text: "Каждая сессия — как глоток свежего воздуха. Нашел ту самую внутреннюю опору.", rating: 5 }
-            ],
-
-            // ==========================================
-            // ⭐️ НОВЫЙ РАЗДЕЛ: ФОРМАТ И СТОИМОСТЬ ⭐️
-            // ==========================================
-            pricing: [
-                { title: "Онлайн-сессия", duration: "60 мин", price: "3 500 ₽" },
-                { title: "Личная встреча", duration: "60 мин", price: "5 000 ₽" },
-                { title: "Групповая терапия", duration: "120 мин", price: "2 500 ₽" }
-            ]
+            // --- 5. ТАБЛИЦЫ И СИСТЕМНЫЕ ССЫЛКИ (БАЗА ДАННЫХ) ---
+            bookingLink: "https://t.me/aicreata", // ✈️ ССЫЛКА ДЛЯ БРОНИ: (запасная, если в таблице нет ссылки у тура)
+            googleSheetUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSaRWByT--Ch96eWyxGr2fKuwK7NFITq0YG6g_k6fZkP78CreHlEHB96AU1x6fLyiRT9SxW2_xRTGsG/pub?gid=0&single=true&output=csv", // 📊 ССЫЛКА НА ТАБЛИЦУ С ТУРАМИ (CSV)
+            reviewsCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSaRWByT--Ch96eWyxGr2fKuwK7NFITq0YG6g_k6fZkP78CreHlEHB96AU1x6fLyiRT9SxW2_xRTGsG/pub?gid=882822745&single=true&output=csv", // 📝 ССЫЛКА НА ТАБЛИЦУ С ОТЗЫВАМИ (CSV)
+            reviewsPostUrl: "https://script.google.com/macros/s/AKfycbwnSKpgdCJGand6-hgZ1L6_5a7RRxi9gpf4fa-sPvuOGJqTBp6GiBYtdjOzzjfvMfDR-Q/exec" // ⚙️ ССЫЛКА СКРИПТА GOOGLE (для отправки отзывов)
         };
-        // ==========================================
-        // КОНЕЦ БЛОКА НАСТРОЕК
-        // ==========================================
+        // =========================================================================
+        // 👆👆👆 КОНЕЦ НАСТРОЕК ВАЙБКОДЕРА 👆👆👆
+        // =========================================================================
 
-        const tg = window.Telegram?.WebApp;
+        // Иконки
+        const IconArrowLeft = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>;
+        const IconArrowRightTop = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>;
+        const IconInstagram = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>;
+        const IconSend = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>;
+        const IconPhone = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>;
+        const IconMapPin = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>;
+        const IconStar = ({size=24, filled=true, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>;
+        const IconEdit = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
 
-        const App = () => {
-            const [isModalOpen, setIsModalOpen] = useState(false);
-            const [selectedMood, setSelectedMood] = useState(null);
-            const [selectedMessage, setSelectedMessage] = useState("");
-            
-            // ВАЙБОВЫЙ ФИКС: Добавили потерянное состояние для окна Полезного
-            const [isFreebiesOpen, setIsFreebiesOpen] = useState(false);
-            
-            // Новое состояние для окна Стоимости
-            const [isPricingOpen, setIsPricingOpen] = useState(false);
-            
-            // ВАЙБОВЫЙ ФИКС: Новое состояние для окна QR-кода
-            const [isQrOpen, setIsQrOpen] = useState(false);
-            
-            // Новые состояния для лоадера и отзывов
-            const [isLoading, setIsLoading] = useState(true);
+        function App() {
+            const [activeScreen, setActiveScreen] = useState('home');
+            const [tours, setTours] = useState([]);
+            const [isLoadingTours, setIsLoadingTours] = useState(true);
+            const [dynamicBookingLink, setDynamicBookingLink] = useState("");
+            const [sortOrder, setSortOrder] = useState('none');
+            const [touchStart, setTouchStart] = useState(null);
+            const [touchEnd, setTouchEnd] = useState(null);
             const [reviews, setReviews] = useState([]);
-            const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
+            const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+            const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
             const [reviewForm, setReviewForm] = useState({ name: '', text: '', rating: 5 });
+            const [isReviewSubmitted, setIsReviewSubmitted] = useState(false);
             const [isSubmitting, setIsSubmitting] = useState(false);
-            const [submitStatus, setSubmitStatus] = useState(null);
-            const [activeExpertise, setActiveExpertise] = useState(null);
+            const [isAppLoading, setIsAppLoading] = useState(true);
+            const [isAppFading, setIsAppFading] = useState(false);
 
-            // Состояние для обработки свайпа (Swipe Back)
-            const [touchStartXY, setTouchStartXY] = useState({x: 0, y: 0});
+            useEffect(() => {
+                if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.ready();
+                    window.Telegram.WebApp.expand();
+                    if (window.Telegram.WebApp.disableVerticalSwipes) {
+                        window.Telegram.WebApp.disableVerticalSwipes();
+                    }
+                }
 
-            // 3. Легкая вибрация (Haptic Feedback)
+                if (window.Papa && CONFIG.googleSheetUrl) {
+                    window.Papa.parse(CONFIG.googleSheetUrl, {
+                        download: true,
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            let foundGlobalLink = "";
+                            const validTours = results.data.map(row => {
+                                const linkKey = Object.keys(row).find(k => k.trim().toLowerCase() === 'bookinglink');
+                                const rowLink = linkKey ? row[linkKey].trim() : '';
+                                if (rowLink && !foundGlobalLink) foundGlobalLink = rowLink;
+                                return { ...row, _actualLink: rowLink };
+                            }).filter(row => row.title && row.price);
+                            setDynamicBookingLink(foundGlobalLink);
+                            setTours(validTours);
+                            setIsLoadingTours(false);
+                        },
+                        error: function(err) {
+                            console.error("Ошибка загрузки туров:", err);
+                            setIsLoadingTours(false);
+                        }
+                    });
+                } else {
+                    setIsLoadingTours(false);
+                }
+
+                if (window.Papa && CONFIG.reviewsCsvUrl) {
+                    window.Papa.parse(CONFIG.reviewsCsvUrl, {
+                        download: true,
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            const fetchedReviews = results.data
+                                .filter(row => row.name && row.text)
+                                .map((row, index) => ({
+                                    id: index,
+                                    name: row.name,
+                                    date: row.date,
+                                    rating: parseInt(row.rating) || 5,
+                                    text: row.text
+                                })).reverse();
+                            setReviews(fetchedReviews);
+                            setIsLoadingReviews(false);
+                        },
+                        error: function(err) {
+                            console.error("Ошибка загрузки отзывов:", err);
+                            setIsLoadingReviews(false);
+                        }
+                    });
+                } else {
+                    setIsLoadingReviews(false);
+                }
+            }, []);
+
+            // Загрузочный экран теперь ждет загрузку данных из таблиц
+            useEffect(() => {
+                if (!isLoadingTours && !isLoadingReviews) {
+                    const fadeTimer = setTimeout(() => setIsAppFading(true), 400);
+                    const removeTimer = setTimeout(() => setIsAppLoading(false), 900);
+                    return () => { clearTimeout(fadeTimer); clearTimeout(removeTimer); };
+                }
+            }, [isLoadingTours, isLoadingReviews]);
+
             const triggerHaptic = () => {
-                if (tg && tg.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('light');
-                }
+                if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                else if (navigator.vibrate) navigator.vibrate(50);
             };
 
-            // 1 & 2. Инициализация Telegram Mini App (разворот и защита от смахивания)
-            useEffect(() => {
-                if (tg) {
-                    tg.ready();
-                    tg.expand(); // Разворачиваем на весь экран
-                    tg.enableClosingConfirmation(); // Защита от случайного закрытия
-                    if (tg.disableVerticalSwipes) {
-                        tg.disableVerticalSwipes(); // Блокировка смахивания вниз (в новых версиях TG)
-                    }
-                }
-            }, []);
-
-            // 🛠 ВАЙБОВЫЙ ФИКС 1: Блокировка скролла фона при открытых модалках
-            useEffect(() => {
-                if (isModalOpen || isReviewFormOpen || isFreebiesOpen || isPricingOpen || isQrOpen) {
-                    document.body.style.overflow = 'hidden';
-                } else {
-                    document.body.style.overflow = '';
-                }
-                return () => { document.body.style.overflow = ''; };
-            }, [isModalOpen, isReviewFormOpen, isFreebiesOpen, isPricingOpen, isQrOpen]);
-
-            // 4. Обработка системной кнопки "Назад" (Android/TG Desktop)
-            useEffect(() => {
-                if (!tg) return;
-                
-                const handleBack = () => {
-                    triggerHaptic();
-                    setIsModalOpen(false);
-                    setIsReviewFormOpen(false);
-                    setIsFreebiesOpen(false); // Закрываем полезное при системном свайпе
-                    setIsPricingOpen(false); // Закрываем прайс-лист
-                    setIsQrOpen(false); // Закрываем QR-код
-                };
-
-                if (isModalOpen || isReviewFormOpen || isFreebiesOpen || isPricingOpen || isQrOpen) {
-                    tg.BackButton.show();
-                    tg.onEvent('backButtonClicked', handleBack);
-                } else {
-                    tg.BackButton.hide();
-                    tg.offEvent('backButtonClicked', handleBack);
-                }
-
-                return () => {
-                    tg.offEvent('backButtonClicked', handleBack);
-                };
-            }, [isModalOpen, isReviewFormOpen, isFreebiesOpen, isPricingOpen, isQrOpen]);
-
-            // 🛠 ВАЙБОВЫЙ ФИКС 3: Обработчики свайпа вправо (Touch Events для модалок)
-            const onTouchStart = (e) => {
-                setTouchStartXY({
-                    x: e.targetTouches[0].clientX,
-                    y: e.targetTouches[0].clientY
-                });
-            };
-
-            const onTouchEnd = (e, closeFn) => {
-                const touchEndX = e.changedTouches[0].clientX;
-                const touchEndY = e.changedTouches[0].clientY;
-                
-                const dx = touchEndX - touchStartXY.x;
-                const dy = Math.abs(touchEndY - touchStartXY.y);
-                
-                // Если провели вправо больше чем на 70px и палец не ушел сильно вверх-вниз (защита от скролла)
-                if (dx > 70 && dy < 50) { 
-                    triggerHaptic();
-                    closeFn();
-                }
-            };
-
-            // Эффект загрузки данных при старте (Чтение напрямую из Google Таблицы)
-            useEffect(() => {
-                if (CONFIG.googleSheetUrl) {
-                    // Достаем ID таблицы из ссылки
-                    const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-                    if (match && match[1]) {
-                        const sheetId = match[1];
-                        const sheetName = encodeURIComponent("Опубликованные отзывы");
-                        const timestamp = new Date().getTime(); // Антикэш
-                        
-                        // Специальная ссылка Google API для прямого чтения таблиц (вайб-кодерский трюк!)
-                        const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}&t=${timestamp}`;
-
-                        fetch(fetchUrl, { cache: 'no-store' })
-                            .then(res => res.text())
-                            .then(text => {
-                                // Очищаем ответ от лишних символов Google
-                                const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
-                                const data = JSON.parse(jsonStr);
-                                const rows = data.table.rows;
-                                const loadedReviews = [];
-
-                                rows.forEach((row, idx) => {
-                                    // Проверяем, что в строке есть имя (0 колонка) и текст (2 колонка)
-                                    if (row.c && row.c[0] && row.c[2]) {
-                                        const name = row.c[0].v;
-                                        const textVal = row.c[2].v;
-                                        
-                                        // Игнорируем заголовки, если они попали в данные
-                                        if (textVal && textVal.toLowerCase() !== "текст" && name !== "Имя") {
-                                            loadedReviews.push({
-                                                id: idx,
-                                                name: name || "Аноним",
-                                                text: textVal,
-                                                // Оценка в 4 колонке (индекс 3)
-                                                rating: row.c[3] ? parseInt(row.c[3].v) : 5 
-                                            });
-                                        }
-                                    }
-                                });
-
-                                if (loadedReviews.length > 0) {
-                                    setReviews(loadedReviews.reverse()); // Свежие наверх
-                                } else {
-                                    setReviews(CONFIG.defaultReviews);
-                                }
-                            })
-                            .catch(err => {
-                                console.warn("⚠️ Не удалось загрузить из таблицы напрямую. Показываем дефолтные.");
-                                setReviews(CONFIG.defaultReviews);
-                            })
-                            .finally(() => setIsLoading(false));
-                        return; // Завершаем, чтобы не пошло дальше
-                    }
-                }
-                
-                // Если ссылки на таблицу нет
-                setReviews(CONFIG.defaultReviews);
-                setIsLoading(false);
-            }, []);
-
-            // Отправка нового отзыва
-            const handleReviewSubmit = (e) => {
-                e.preventDefault();
+            const navigateTo = (screen, customLink = null) => {
                 triggerHaptic();
-                if (!CONFIG.googleScriptUrl) {
-                    setSubmitStatus('error_no_url');
+                if (screen === 'booking') {
+                    const linkToOpen = CONFIG.bookingLink;
+                    if (window.Telegram?.WebApp?.openLink) window.Telegram.WebApp.openLink(linkToOpen);
+                    else window.open(linkToOpen, '_blank');
                     return;
                 }
-                
-                setIsSubmitting(true);
-                
-                // Подготавливаем данные именно так, как ждет твой скрипт (e.parameter)
-                const formData = new URLSearchParams();
-                formData.append('reviewer_name', reviewForm.name);
-                formData.append('reviewer_text', reviewForm.text);
-                formData.append('reviewer_rating', reviewForm.rating);
-
-                fetch(CONFIG.googleScriptUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: formData.toString()
-                })
-                .then(() => {
-                    setSubmitStatus('success');
-                    setReviewForm({ name: '', text: '', rating: 5 });
-                    // Закрываем форму через 3 секунды после успеха
-                    setTimeout(() => {
-                        setIsReviewFormOpen(false);
-                        setSubmitStatus(null);
-                    }, 3000);
-                })
-                .catch(() => setSubmitStatus('error'))
-                .finally(() => setIsSubmitting(false));
+                if (screen === 'quiQuo') {
+                    const linkToOpen = customLink || dynamicBookingLink;
+                    if (!linkToOpen) { alert("Ссылка на подборку еще не добавлена!"); return; }
+                    if (window.Telegram?.WebApp?.openLink) window.Telegram.WebApp.openLink(linkToOpen);
+                    else window.open(linkToOpen, '_blank');
+                    return;
+                }
+                setActiveScreen(screen);
+                window.scrollTo(0, 0);
             };
 
+            const extractPrice = (priceStr) => { if (!priceStr) return 0; return parseInt(priceStr.replace(/\D/g, ''), 10) || 0; };
+            const onTouchStart = (e) => { setTouchEnd(null); setTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY }); };
+            const onTouchMove = (e) => { setTouchEnd({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY }); };
+            const onTouchEnd = () => {
+                if (!touchStart || !touchEnd) return;
+                const distanceX = touchEnd.x - touchStart.x;
+                const distanceY = Math.abs(touchEnd.y - touchStart.y);
+                const isEdgeSwipe = touchStart.x <= 30;
+                if (isEdgeSwipe && distanceX > 80 && distanceY < 50) {
+                    if (activeScreen !== 'home') navigateTo('home');
+                }
+            };
+
+            const handleSubmitReview = async (e) => {
+                e.preventDefault();
+                if (isSubmitting) return;
+                setIsSubmitting(true);
+                try {
+                    await fetch(CONFIG.reviewsPostUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(reviewForm) });
+                    setIsReviewSubmitted(true);
+                    const d = new Date();
+                    const newDateStr = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+                    setReviews(prev => [{ id: Date.now(), name: reviewForm.name, date: newDateStr, rating: reviewForm.rating, text: reviewForm.text }, ...prev]);
+                    setTimeout(() => { setIsReviewModalOpen(false); setIsReviewSubmitted(false); setReviewForm({ name: '', text: '', rating: 5 }); }, 3000);
+                } catch (error) { alert("Ошибка при отправке."); } finally { setIsSubmitting(false); }
+            };
+
+            // Разделяем имя на две строки, как на фото
+            const nameParts = CONFIG.brandName.split(' ');
+            const firstName = nameParts[0];
+            const lastName = nameParts.slice(1).join(' ');
+
             return (
-                <div className="max-w-md mx-auto min-h-screen pb-24 relative selection:bg-sage/30">
-                    
-                    {/* Кнопка QR-кода (Справа вверху, как ты и просила!) */}
-                    <button 
-                        onClick={() => { triggerHaptic(); setIsQrOpen(true); }}
-                        className="absolute top-6 right-6 glass-panel p-3 rounded-full text-sage hover:text-graphite transition-all active:scale-95 shadow-md z-50"
-                    >
-                        <QrCode className="w-6 h-6" />
-                    </button>
-
-                    {/* Header / Hero */}
-                    <header className="px-6 pt-12 pb-6 flex flex-col items-center text-center opacity-0 animate-fade-in-up">
-                        <div className="relative mb-6">
-                            <div className="w-32 h-32 rounded-full overflow-hidden shadow-soft border-4 border-white">
-                                <img 
-                                    src={CONFIG.hero.photoUrl} 
-                                    alt="" 
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <div className="absolute -bottom-2 -right-2 bg-sage text-white p-2 rounded-full shadow-md animate-pulse-slow">
-                                <Leaf className="w-4 h-4" />
-                            </div>
+                <div 
+                    className="app-container text-white hide-scrollbar selection:bg-white/30"
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
+                >
+                    {/* Обновленный загрузочный экран */}
+                    {isAppLoading && (
+                        <div className={`fixed inset-0 z-[100] bg-[#0a0a0a] flex flex-col items-center justify-center transition-opacity duration-500 ${isAppFading ? 'opacity-0' : 'opacity-100'}`}>
+                            <div className="w-14 h-14 border-[3px] border-white/20 border-t-white rounded-full animate-spin mb-5 shadow-[0_0_15px_rgba(255,255,255,0.1)]"></div>
+                            <div className="text-white/60 text-xs font-semibold tracking-[0.2em] uppercase animate-pulse">Загрузка</div>
                         </div>
-                        <h1 className="font-serif text-3xl mb-2 text-graphite tracking-tight">{CONFIG.hero.name}</h1>
-                        <p className="text-sm text-graphite/70 font-light max-w-[240px] leading-relaxed">
-                            {CONFIG.hero.description}
-                        </p>
-                    </header>
+                    )}
 
-                    {/* State Checker (Unique Feature) */}
-                    <section className="px-6 mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                        <div className="glass-panel rounded-[2rem] p-6 shadow-glass text-center transition-all duration-300">
-                            {!selectedMood ? (
-                                <div>
-                                    <h3 className="font-serif text-lg mb-4 text-graphite">Как ты сейчас?</h3>
-                                    <div className="flex justify-center gap-6">
-                                        {Object.keys(CONFIG.supportMessages).map((emoji) => (
-                                            <button 
-                                                key={emoji}
-                                                onClick={() => { 
-                                                    triggerHaptic(); 
-                                                    const messages = CONFIG.supportMessages[emoji];
-                                                    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-                                                    setSelectedMood(emoji); 
-                                                    setSelectedMessage(randomMsg);
-                                                }}
-                                                className="text-4xl transition-transform active:scale-90 hover:scale-110"
-                                            >
-                                                {emoji}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="animate-fade-in-up">
-                                    <p className="text-sm italic text-graphite/80 leading-relaxed mb-4">
-                                        "{selectedMessage}"
-                                    </p>
-                                    <button 
-                                        onClick={() => { triggerHaptic(); setSelectedMood(null); setSelectedMessage(""); }}
-                                        className="text-xs text-sage border-b border-sage/30 pb-0.5 uppercase tracking-wider font-medium"
-                                    >
-                                        Вернуться
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </section>
+                    {/* ========================================================= */}
+                    {/* --- ГЛАВНЫЙ ЭКРАН (КАК НА ФОТО) --- */}
+                    {/* ========================================================= */}
+                    {activeScreen === 'home' && (
+                        <div className="relative min-h-[100dvh] flex flex-col justify-end animate-fade">
+                            {/* Фоновое фото */}
+                            <div className="absolute inset-0 z-0">
+                                <img src={CONFIG.avatarUrl} alt="Background" className="w-full h-full object-cover" />
+                                {/* Легкий градиент снизу, чтобы карточка не сливалась с фото */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                            </div>
 
-                    {/* Interactive Buttons */}
-                    <section className="px-6 mb-8 grid grid-cols-2 gap-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                        <button 
-                            onClick={() => { triggerHaptic(); setIsModalOpen(true); }}
-                            className="glass-panel p-5 rounded-[2rem] flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform"
-                        >
-                            <div className="bg-sand p-3 rounded-full text-sage">
-                                <Heart className="w-6 h-6" />
-                            </div>
-                            <span className="font-medium text-sm">Обо мне</span>
-                        </button>
-                        
-                        <button 
-                            onClick={() => { triggerHaptic(); setIsPricingOpen(true); }}
-                            className="glass-panel p-5 rounded-[2rem] flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform"
-                        >
-                            <div className="bg-sand p-3 rounded-full text-sage">
-                                <Calendar className="w-6 h-6" />
-                            </div>
-                            <span className="font-medium text-sm text-center leading-tight">Формат и<br/>стоимость</span>
-                        </button>
-
-                        <div className="col-span-2 glass-panel p-6 rounded-[2rem] transition-all duration-300">
-                            <h3 className="font-serif text-lg mb-4 flex items-center gap-2">
-                                <Sparkles className="w-5 h-5 text-sage" />
-                                С чем я работаю
-                            </h3>
-                            <div className="flex flex-wrap gap-2">
-                                {CONFIG.expertise.map((item, idx) => (
-                                    <button 
-                                        key={idx} 
-                                        onClick={() => { triggerHaptic(); setActiveExpertise(activeExpertise === idx ? null : idx); }}
-                                        className={`text-xs px-4 py-2 rounded-full border transition-all duration-300 active:scale-95 ${activeExpertise === idx ? 'bg-sage text-white border-sage shadow-soft' : 'bg-white/60 text-graphite/80 border-white hover:bg-white/80'}`}
-                                    >
-                                        {item.title}
-                                    </button>
-                                ))}
-                            </div>
-                            {activeExpertise !== null && (
-                                <div className="mt-4 p-4 bg-sage/10 rounded-2xl border border-sage/20 animate-fade-in-up">
-                                    <p className="text-sm font-light text-graphite/80 leading-relaxed italic">
-                                        "{CONFIG.expertise[activeExpertise].message}"
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* КНОПКА ПОЛЕЗНОЕ (Теперь открывает меню лид-магнитов) */}
-                        <button 
-                            onClick={() => { triggerHaptic(); setIsFreebiesOpen(true); }}
-                            className="col-span-2 bg-sage text-white p-5 rounded-[2rem] flex items-center justify-between active:scale-95 transition-transform shadow-soft w-full"
-                        >
-                            <div className="text-left">
-                                <span className="block font-serif text-lg mb-1">Полезное (Free)</span>
-                                <span className="block text-xs text-white/80 font-light">Гайды, медитации и тесты</span>
-                            </div>
-                            <div className="bg-white/20 p-2 rounded-full">
-                                <Leaf className="w-5 h-5" />
-                            </div>
-                        </button>
-                    </section>
-
-                    {/* Reviews Carousel & Submit Form */}
-                    <section className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                        <div className="flex justify-between items-end px-6 mb-4">
-                            <h2 className="font-serif text-xl text-graphite">Отзывы</h2>
-                            <button 
-                                onClick={() => { triggerHaptic(); setIsReviewFormOpen(true); }} 
-                                className="text-xs text-sage border-b border-sage/30 pb-0.5 hover:text-graphite transition-colors"
-                            >
-                                Оставить отзыв
-                            </button>
-                        </div>
-                        {isLoading ? (
-                            <div className="px-6 pb-4 text-sm text-sage flex items-center gap-2">
-                                <div className="w-4 h-4 rounded-full border-2 border-sage-light border-t-sage animate-spin"></div>
-                                Загружаем отзывы...
-                            </div>
-                        ) : (
-                            <div className="flex gap-4 overflow-x-auto snap-x px-6 pb-4 no-scrollbar">
-                                {reviews.map((review, index) => (
-                                    <div key={review.id || index} className="snap-center shrink-0 w-64 glass-panel p-5 rounded-[2rem]">
-                                        <div className="flex mb-2">
-                                            {[...Array(5)].map((_, i) => (
-                                                <svg key={i} className={`w-4 h-4 ${i < (review.rating || 5) ? 'fill-current text-sage' : 'fill-current text-sage-light'}`} viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                                            ))}
+                            {/* Стеклянная панель */}
+                            <div className="relative z-10 p-4 w-full animate-item" style={{animationDelay: '0.2s'}}>
+                                <div className="glass-panel rounded-[32px] p-6 pb-8 w-full">
+                                    
+                                    {/* Заголовок и иконка */}
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            {/* РАЗМЕР ШРИФТА (Имя): text-3xl (было 4xl) */}
+                                            <h1 className="text-3xl font-bold tracking-tight leading-[1.1]">
+                                                {CONFIG.brandName}
+                                            </h1>
+                                            {/* РАЗМЕР ШРИФТА (Подзаголовок): text-sm */}
+                                            <div className="text-white/80 text-sm font-medium mt-1.5">
+                                                {CONFIG.subtitle}
+                                            </div>
                                         </div>
-                                        <p className="text-sm text-graphite/80 font-light leading-relaxed mb-3">"{review.text}"</p>
-                                        <span className="text-xs font-medium text-graphite">{review.name}</span>
+                                        <div className="text-white mt-1">
+                                            <IconArrowRightTop size={20} />
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                        
-                        {/* Эстетичная плашка про разрешение клиентов */}
-                        <div className="text-center px-6 flex justify-center items-center gap-1.5 mt-1">
-                            <Heart className="w-3 h-3 text-sage/60" />
-                            <p className="text-[11px] text-graphite/50 font-light italic">
-                                Все отзывы опубликованы с разрешения клиентов
-                            </p>
-                        </div>
-                    </section>
 
-                    {/* CTA Bottom Buttons (Fixed) */}
-                    <div className="fixed bottom-6 left-0 right-0 px-6 max-w-md mx-auto z-40 flex gap-3">
-                        <a 
-                            href={CONFIG.links.telegram}
-                            target="_blank"
-                            onClick={triggerHaptic}
-                            className="glass-panel border-sage/20 shadow-soft flex-1 py-3.5 rounded-full flex items-center justify-center text-graphite font-medium active:scale-95 transition-transform text-sm"
-                        >
-                            Написать мне
-                        </a>
-                        <a 
-                            href={CONFIG.links.telegramChannel}
-                            target="_blank"
-                            onClick={triggerHaptic}
-                            className="bg-sage text-white shadow-soft flex-1 py-3.5 rounded-full flex items-center justify-center font-medium active:scale-95 transition-transform text-sm"
-                        >
-                            Мой канал
-                        </a>
+                                    {/* Статистика */}
+                                    <div className="flex justify-between items-center mb-6 border-b border-white/20 pb-6">
+                                        <div className="text-left">
+                                            {/* РАЗМЕР ШРИФТА (Цифра статистики): text-lg */}
+                                            <div className="font-bold text-lg">{CONFIG.stats.toursCount}</div>
+                                            {/* РАЗМЕР ШРИФТА (Подпись под цифрой): text-xs */}
+                                            <div className="text-xs text-white/70">Туров</div>
+                                        </div>
+                                        <div className="text-left">
+                                            {/* РАЗМЕР ШРИФТА (Цифра статистики): text-lg */}
+                                            <div className="font-bold text-lg">{CONFIG.stats.clientsCount}</div>
+                                            {/* РАЗМЕР ШРИФТА (Подпись под цифрой): text-xs */}
+                                            <div className="text-xs text-white/70">Клиентов</div>
+                                        </div>
+                                        <div className="text-left">
+                                            {/* РАЗМЕР ШРИФТА (Цифра статистики): text-lg */}
+                                            <div className="font-bold text-lg">{CONFIG.stats.rating}</div>
+                                            {/* РАЗМЕР ШРИФТА (Подпись под цифрой): text-xs */}
+                                            <div className="text-xs text-white/70">Рейтинг</div>
+                                        </div>
+                                    </div>
+
+                                    {/* 3 Квадратных превью = Навигация! */}
+                                    <div className="flex gap-3 mb-6">
+                                        <div onClick={() => navigateTo('about')} className="flex-1 aspect-square rounded-2xl overflow-hidden relative cursor-pointer active:scale-95 transition-all">
+                                            <img src={CONFIG.menuImages.about} className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center backdrop-blur-[2px]">
+                                                {/* РАЗМЕР ШРИФТА (Подписи на квадратных кнопках): text-xs */}
+                                                <span className="text-white text-xs font-semibold tracking-wide">Обо мне</span>
+                                            </div>
+                                        </div>
+                                        <div onClick={() => navigateTo('reviews')} className="flex-1 aspect-square rounded-2xl overflow-hidden relative cursor-pointer active:scale-95 transition-all">
+                                            <img src={CONFIG.menuImages.reviews} className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center backdrop-blur-[2px]">
+                                                {/* РАЗМЕР ШРИФТА (Подписи на квадратных кнопках): text-xs */}
+                                                <span className="text-white text-xs font-semibold tracking-wide">Отзывы</span>
+                                            </div>
+                                        </div>
+                                        <div onClick={() => navigateTo('contacts')} className="flex-1 aspect-square rounded-2xl overflow-hidden relative cursor-pointer active:scale-95 transition-all">
+                                            <img src={CONFIG.menuImages.contacts} className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center backdrop-blur-[2px]">
+                                                {/* РАЗМЕР ШРИФТА (Подписи на квадратных кнопках): text-xs */}
+                                                <span className="text-white text-xs font-semibold tracking-wide">Контакты</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* РАЗМЕР ШРИФТА (Главная кнопка внизу "Горящие туры"): text-xl */}
+                                    {/* 👇 ВЫСОТА КНОПКИ: сейчас h-20. Можешь поменять на h-16 (меньше), h-24 (больше) или свой размер, например h-[100px] 👇 */}
+                                    <div onClick={() => navigateTo('tours')} className="w-full h-20 rounded-2xl overflow-hidden relative cursor-pointer active:scale-95 transition-all">
+                                        <img src={CONFIG.mainButtonImage} className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px]">
+                                            <span className="text-white text-xl font-bold tracking-wide uppercase">{CONFIG.mainButtonText}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- ОБЩИЙ РАЗМЫТЫЙ ФОН ДЛЯ ВНУТРЕННИХ СТРАНИЦ --- */}
+                    <div className={`fixed-bg transition-opacity duration-300 ${activeScreen !== 'home' ? 'opacity-100' : 'opacity-0'}`}>
+                        <img src={CONFIG.avatarUrl} alt="Blurred Background" />
                     </div>
 
-                    {/* About Modal */}
-                    {isModalOpen && (
-                        <div 
-                            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-graphite/20 backdrop-blur-sm animate-fade-in-up"
-                            onTouchStart={onTouchStart}
-                            onTouchEnd={(e) => onTouchEnd(e, () => setIsModalOpen(false))}
-                        >
-                            <div className="glass-panel w-full max-w-sm rounded-[2.5rem] p-8 relative shadow-2xl border-white" onClick={e => e.stopPropagation()}>
-                                <button 
-                                    onClick={() => { triggerHaptic(); setIsModalOpen(false); }}
-                                    className="absolute top-6 right-6 text-graphite/50 hover:text-graphite transition-colors bg-white/50 p-2 rounded-full"
-                                >
-                                    <X className="w-5 h-5" />
+                    {/* ========================================================= */}
+                    {/* --- СТРАНИЦА: ОБО МНЕ --- */}
+                    {/* ========================================================= */}
+                    {activeScreen === 'about' && (
+                        <div className="relative min-h-screen p-6 animate-fade z-10">
+                            <button onClick={() => navigateTo('home')} className="flex items-center gap-2 mb-8 font-medium text-white/80 active:opacity-50 transition-opacity">
+                                <IconArrowLeft size={20} /> Назад
+                            </button>
+                            
+                            <div className="glass-panel rounded-3xl p-6 shadow-2xl mx-auto">
+                                <img src={CONFIG.menuImages.about} alt="About" className="w-full h-64 object-cover rounded-2xl mb-6 shadow-md" />
+                                {/* РАЗМЕР ШРИФТА (Заголовок "Обо мне"): text-2xl */}
+                                <h2 className="text-2xl font-bold mb-4">{CONFIG.about.title}</h2>
+                                {/* РАЗМЕР ШРИФТА (Текст о тебе): text-sm */}
+                                <p className="text-white/80 leading-relaxed whitespace-pre-line text-sm">{CONFIG.about.text}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ========================================================= */}
+                    {/* --- СТРАНИЦА: ТУРЫ --- */}
+                    {/* ========================================================= */}
+                    {activeScreen === 'tours' && (
+                        <div className="relative min-h-screen p-6 animate-fade z-10 pb-10">
+                            <button onClick={() => navigateTo('home')} className="flex items-center gap-2 mb-6 font-medium text-white/80 active:opacity-50 transition-opacity">
+                                <IconArrowLeft size={20} /> Назад
+                            </button>
+                            
+                            {/* РАЗМЕР ШРИФТА (Заголовок "Горящие туры"): text-3xl */}
+                            <h2 className="text-3xl font-bold mb-2">Горящие туры</h2>
+                            
+                            <div className="w-full flex justify-between items-center mb-6 px-1">
+                                {/* РАЗМЕР ШРИФТА (Кнопка Сортировка): text-sm */}
+                                <button onClick={() => setSortOrder(prev => prev === 'none' ? 'asc' : prev === 'asc' ? 'desc' : 'none')} className="bg-transparent border-b border-white/40 text-sm outline-none py-1 text-white/90 active:opacity-50 transition-opacity flex items-center gap-1">
+                                    {sortOrder === 'none' ? 'Сортировка' : sortOrder === 'asc' ? 'Дешевле' : 'Дороже'}
+                                    {/* РАЗМЕР ШРИФТА (Стрелочка): text-[10px] */}
+                                    <span className="text-[10px]">{sortOrder === 'none' ? '↕' : sortOrder === 'asc' ? '↓' : '↑'}</span>
                                 </button>
-                                
-                                <h2 className="font-serif text-2xl mb-4 text-graphite">{CONFIG.about.title}</h2>
-                                <div className="space-y-4 text-sm font-light text-graphite/80 leading-relaxed max-h-[60vh] overflow-y-auto no-scrollbar pr-2 overscroll-contain">
-                                    {CONFIG.about.paragraphs.map((p, idx) => (
-                                        <p key={idx}>{p}</p>
-                                    ))}
-                                    <div className="bg-sage/10 p-4 rounded-2xl mt-6 border border-sage/20">
-                                        <p className="font-medium text-sage text-center italic">"{CONFIG.about.quote}"</p>
-                                    </div>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.8)] animate-pulse"></span>
+                                    {/* РАЗМЕР ШРИФТА (Обновлено сегодня): text-[10px] */}
+                                    <span className="text-[10px] text-white/70">Обновлено сегодня</span>
                                 </div>
                             </div>
+
+                            {isLoadingTours ? (
+                                <div className="flex justify-center items-center h-40"><div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div></div>
+                            ) : (
+                                <div className="flex flex-col gap-4 w-full">
+                                    {[...tours].sort((a, b) => {
+                                        if (sortOrder === 'asc') return extractPrice(a.price) - extractPrice(b.price);
+                                        if (sortOrder === 'desc') return extractPrice(b.price) - extractPrice(a.price);
+                                        return 0;
+                                    }).map((tour, index) => (
+                                        <div key={index} onClick={() => navigateTo('quiQuo', tour._actualLink)} className="relative glass-panel p-3 rounded-2xl flex gap-4 active:scale-95 transition-all cursor-pointer">
+                                            {/* РАЗМЕР ШРИФТА (Рейтинг 5.0 на картинке тура): text-[11px] */}
+                                            <div className="absolute top-2 right-2 w-7 h-6 bg-white/20 backdrop-blur-md text-white text-[11px] font-bold rounded flex items-center justify-center z-10">{tour.rating || "5.0"}</div>
+                                            <div className="shrink-0"><img src={tour.imageUrl} className="w-24 h-full min-h-[105px] object-cover rounded-xl" /></div>
+                                            <div className="flex flex-col justify-between w-full min-w-0 py-0.5">
+                                                <div>
+                                                    {/* РАЗМЕР ШРИФТА (Название отеля): text-[14px] */}
+                                                    <div className="font-bold text-[14px] leading-snug truncate">{tour.hotel}</div>
+                                                    {/* РАЗМЕР ШРИФТА (Даты тура): text-[11px] */}
+                                                    <div className="text-[11px] text-white/60 truncate mt-1">{tour.dates}</div>
+                                                    {/* РАЗМЕР ШРИФТА (Локация тура): text-[11px] */}
+                                                    <div className="text-[11px] text-white/60 flex items-center gap-1 mt-0.5 truncate"><IconMapPin size={12} className="text-white/40" /><span>{tour.title}</span></div>
+                                                </div>
+                                                <div className="flex items-end justify-between mt-3">
+                                                    <div className="flex flex-col">
+                                                        {/* РАЗМЕР ШРИФТА (Старая зачеркнутая цена): text-[10px] */}
+                                                        <span className="line-through text-[10px] text-white/40 mb-0.5">{tour.oldPrice}</span>
+                                                        {/* РАЗМЕР ШРИФТА (Новая жирная цена): text-[16px] */}
+                                                        <span className="font-bold text-[16px]">{tour.price}</span>
+                                                    </div>
+                                                    {/* РАЗМЕР ШРИФТА (Кнопка "Подробнее"): text-[11px] */}
+                                                    <button className="bg-white text-black text-[11px] font-semibold py-2 px-3 rounded-xl">Подробнее</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
 
-                    {/* QR-код Modal */}
-                    {isQrOpen && (
-                        <div 
-                            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-graphite/20 backdrop-blur-sm animate-fade-in-up"
-                            onTouchStart={onTouchStart}
-                            onTouchEnd={(e) => onTouchEnd(e, () => setIsQrOpen(false))}
-                        >
-                            <div className="glass-panel w-full max-w-sm rounded-[2.5rem] p-8 relative shadow-2xl border-white text-center" onClick={e => e.stopPropagation()}>
-                                <button 
-                                    onClick={() => { triggerHaptic(); setIsQrOpen(false); }}
-                                    className="absolute top-6 right-6 text-graphite/50 hover:text-graphite transition-colors bg-white/50 p-2 rounded-full"
-                                >
-                                    <X className="w-5 h-5" />
+                    {/* ========================================================= */}
+                    {/* --- СТРАНИЦА: КОНТАКТЫ --- */}
+                    {/* ========================================================= */}
+                    {activeScreen === 'contacts' && (
+                        <div className="relative min-h-screen p-6 animate-fade z-10 flex flex-col justify-center">
+                            <div className="absolute top-6 left-6">
+                                <button onClick={() => navigateTo('home')} className="flex items-center gap-2 font-medium text-white/80 active:opacity-50 transition-opacity">
+                                    <IconArrowLeft size={20} /> Назад
                                 </button>
-                                
-                                <h2 className="font-serif text-2xl mb-6 text-graphite flex items-center justify-center gap-2">
-                                    <QrCode className="w-6 h-6 text-sage" />
-                                    Мой канал
-                                </h2>
-                                
-                                <img 
-                                    src={CONFIG.links.qrCodeUrl} 
-                                    alt="" 
-                                    className="w-full max-w-[280px] h-auto object-contain drop-shadow-xl mb-6 mx-auto"
-                                />
-                                
-                                <p className="text-sm font-light text-graphite/80 leading-relaxed italic px-2">
-                                    Отсканируй, чтобы не потерять уютный канал ✨
-                                </p>
+                            </div>
+                            
+                            {/* РАЗМЕР ШРИФТА (Заголовок "На связи"): text-3xl */}
+                            <h2 className="text-3xl font-bold mb-8 text-center">На связи</h2>
+                            
+                            <div className="w-full flex flex-col gap-4">
+                                <a href={CONFIG.contacts.telegram} target="_blank" className="flex items-center gap-4 glass-panel p-4 rounded-[20px] active:scale-95 transition-all">
+                                    <div className="bg-blue-500/20 p-3 rounded-full text-blue-400"><IconSend size={24} /></div>
+                                    {/* РАЗМЕР ШРИФТА (Текст "Telegram"): text-lg */}
+                                    <span className="text-lg font-medium">Telegram</span>
+                                </a>
+                                <a href={CONFIG.contacts.instagram} target="_blank" className="flex items-center gap-4 glass-panel p-4 rounded-[20px] active:scale-95 transition-all">
+                                    <div className="bg-pink-500/20 p-3 rounded-full text-pink-400"><IconInstagram size={24} /></div>
+                                    {/* РАЗМЕР ШРИФТА (Текст "Instagram"): text-lg */}
+                                    <span className="text-lg font-medium">Instagram</span>
+                                </a>
+                                <a href={`tel:${CONFIG.contacts.phone}`} className="flex items-center gap-4 glass-panel p-4 rounded-[20px] active:scale-95 transition-all">
+                                    <div className="bg-green-500/20 p-3 rounded-full text-green-400"><IconPhone size={24} /></div>
+                                    {/* РАЗМЕР ШРИФТА (Текст "Телефон"): text-lg */}
+                                    <span className="text-lg font-medium">{CONFIG.contacts.phone}</span>
+                                </a>
                             </div>
                         </div>
                     )}
 
-                    {/* Написать отзыв Modal */}
-                    {isReviewFormOpen && (
-                        <div 
-                            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-graphite/20 backdrop-blur-sm animate-fade-in-up"
-                            onTouchStart={onTouchStart}
-                            onTouchEnd={(e) => onTouchEnd(e, () => setIsReviewFormOpen(false))}
-                        >
-                            <div className="glass-panel w-full max-w-sm rounded-[2.5rem] p-8 relative shadow-2xl border-white" onClick={e => e.stopPropagation()}>
-                                <button 
-                                    onClick={() => { triggerHaptic(); setIsReviewFormOpen(false); }}
-                                    className="absolute top-6 right-6 text-graphite/50 hover:text-graphite transition-colors bg-white/50 p-2 rounded-full"
-                                >
-                                    <X className="w-5 h-5" />
+                    {/* ========================================================= */}
+                    {/* --- СТРАНИЦА: ОТЗЫВЫ --- */}
+                    {/* ========================================================= */}
+                    {activeScreen === 'reviews' && (
+                        <div className="relative min-h-screen pt-6 px-6 animate-fade z-10 flex flex-col">
+                            <button onClick={() => navigateTo('home')} className="flex items-center gap-2 mb-6 font-medium text-white/80 shrink-0 active:opacity-50 transition-opacity">
+                                <IconArrowLeft size={20} /> Назад
+                            </button>
+                            
+                            {/* РАЗМЕР ШРИФТА (Заголовок "Отзывы"): text-3xl */}
+                            <h2 className="text-3xl font-bold mb-8 text-center">Отзывы</h2>
+                            
+                            <div className="flex flex-col gap-4 w-full pb-32">
+                                {isLoadingReviews ? (<div className="flex justify-center h-40 items-center"><div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div></div>) : (
+                                    reviews.map(review => (
+                                        <div key={review.id} className="glass-panel p-5 rounded-[20px] flex flex-col gap-3">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    {/* РАЗМЕР ШРИФТА (Имя в отзыве): text-lg */}
+                                                    <h3 className="font-bold text-lg">{review.name}</h3>
+                                                    {/* РАЗМЕР ШРИФТА (Дата отзыва): text-[10px] */}
+                                                    <div className="text-[10px] text-white/50 mt-0.5">{review.date}</div>
+                                                </div>
+                                                <div className="flex gap-0.5 text-white/90">
+                                                    {[...Array(5)].map((_, i) => <IconStar key={i} size={14} filled={i < review.rating} className={i < review.rating ? "text-yellow-400" : "text-white/20"} />)}
+                                                </div>
+                                            </div>
+                                            {/* РАЗМЕР ШРИФТА (Сам текст отзыва): text-sm */}
+                                            <p className="text-white/80 text-sm leading-relaxed">"{review.text}"</p>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            {/* Фиксированная кнопка добавления отзыва */}
+                            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] pb-8 pt-16 px-6 bg-gradient-to-t from-black via-black/80 to-transparent flex justify-center z-20 pointer-events-none">
+                                {/* РАЗМЕР ШРИФТА (Кнопка "Написать отзыв" внизу): класс font-semibold означает среднюю жирность, размер стандартный */}
+                                <button onClick={() => setIsReviewModalOpen(true)} className="w-full max-w-sm flex justify-center items-center gap-2 bg-white text-black font-semibold rounded-[16px] py-4 active:scale-95 transition-all pointer-events-auto text-[16px]">
+                                    <IconEdit size={18} /> Написать отзыв
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ========================================================= */}
+                    {/* --- МОДАЛЬНОЕ ОКНО ДЛЯ ОТЗЫВОВ --- */}
+                    {/* ========================================================= */}
+                    {isReviewModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade">
+                            <div className="glass-panel w-full max-w-sm rounded-[32px] p-6 relative animate-item">
+                                <button onClick={() => setIsReviewModalOpen(false)} className="absolute top-5 right-5 text-white/50 hover:text-white transition-colors">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                 </button>
                                 
-                                <h2 className="font-serif text-2xl mb-4 text-graphite">Оставить отзыв</h2>
-                                
-                                {submitStatus === 'success' ? (
-                                    <div className="text-center py-6 animate-fade-in-up">
-                                        <div className="bg-sage/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <Heart className="w-8 h-8 text-sage" />
+                                {isReviewSubmitted ? (
+                                    <div className="py-10 flex flex-col items-center text-center animate-fade">
+                                        <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4 text-white border border-white/20">
+                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                         </div>
-                                        <p className="text-graphite/80 text-sm">Благодарю! Твои слова отправлены, скоро они появятся здесь.</p>
+                                        {/* РАЗМЕР ШРИФТА (Заголовок "Спасибо!"): text-2xl */}
+                                        <h3 className="text-2xl font-bold mb-2">Спасибо!</h3>
+                                        {/* РАЗМЕР ШРИФТА (Текст "Отзыв появится"): text-sm */}
+                                        <p className="text-white/70 text-sm">Ваш отзыв скоро появится.</p>
                                     </div>
                                 ) : (
-                                    <form onSubmit={handleReviewSubmit} className="space-y-4">
-                                        <div className="flex justify-center gap-2 mb-2">
-                                            {[1, 2, 3, 4, 5].map(star => (
-                                                <svg 
-                                                    key={star} 
-                                                    onClick={() => { triggerHaptic(); setReviewForm({...reviewForm, rating: star}); }}
-                                                    className={`w-8 h-8 cursor-pointer transition-colors ${reviewForm.rating >= star ? 'text-sage fill-current' : 'text-sage-light fill-current'}`} 
-                                                    viewBox="0 0 20 20"
-                                                >
-                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                                </svg>
-                                            ))}
+                                    <form onSubmit={handleSubmitReview} className="flex flex-col gap-6">
+                                        {/* РАЗМЕР ШРИФТА (Заголовок формы): text-2xl */}
+                                        <h3 className="text-2xl font-bold">Оставить отзыв</h3>
+                                        
+                                        <div className="flex flex-col gap-2">
+                                            {/* РАЗМЕР ШРИФТА (Подпись "Оценка"): text-xs */}
+                                            <label className="text-xs text-white/50 uppercase tracking-wide">Оценка</label>
+                                            <div className="flex gap-2">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <button type="button" key={star} onClick={() => setReviewForm({...reviewForm, rating: star})} className="active:scale-75 transition-all">
+                                                        <IconStar size={36} filled={star <= reviewForm.rating} className={star <= reviewForm.rating ? "text-yellow-400" : "text-white/20"} />
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <input 
-                                            required 
-                                            type="text" 
-                                            placeholder="Твоё имя" 
-                                            className="w-full bg-white/60 border border-white rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-sage/50 text-graphite"
-                                            value={reviewForm.name}
-                                            onChange={e => setReviewForm({...reviewForm, name: e.target.value})}
-                                        />
-                                        <textarea 
-                                            required 
-                                            placeholder="Поделись своими чувствами и впечатлениями..." 
-                                            rows="4"
-                                            className="w-full bg-white/60 border border-white rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-sage/50 resize-none text-graphite"
-                                            value={reviewForm.text}
-                                            onChange={e => setReviewForm({...reviewForm, text: e.target.value})}
-                                        ></textarea>
                                         
-                                        {submitStatus === 'error_no_url' && <p className="text-red-400 text-xs text-center">Сначала подключи Google Script в настройках кода.</p>}
-                                        {submitStatus === 'error' && <p className="text-red-400 text-xs text-center">Произошла ошибка, попробуй позже.</p>}
+                                        <div className="flex flex-col gap-1">
+                                            {/* РАЗМЕР ШРИФТА (Подпись "Имя"): text-xs */}
+                                            <label className="text-xs text-white/50 uppercase tracking-wide">Имя</label>
+                                            <input type="text" required value={reviewForm.name} onChange={(e) => setReviewForm({...reviewForm, name: e.target.value})} className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white outline-none focus:border-white/50 transition-colors" placeholder="Например: Мария" />
+                                        </div>
                                         
-                                        <button 
-                                            disabled={isSubmitting}
-                                            type="submit" 
-                                            className="w-full bg-sage text-white py-3 rounded-full font-medium shadow-soft active:scale-95 transition-transform disabled:opacity-70 mt-2 flex items-center justify-center gap-2"
-                                        >
-                                            {isSubmitting ? 'Отправляем...' : 'Отправить'}
+                                        <div className="flex flex-col gap-1">
+                                            {/* РАЗМЕР ШРИФТА (Подпись "Впечатления"): text-xs */}
+                                            <label className="text-xs text-white/50 uppercase tracking-wide">Впечатления</label>
+                                            <textarea required rows="3" value={reviewForm.text} onChange={(e) => setReviewForm({...reviewForm, text: e.target.value})} className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white outline-none focus:border-white/50 transition-colors resize-none" placeholder="Пару слов об отдыхе..."></textarea>
+                                        </div>
+                                        
+                                        {/* РАЗМЕР ШРИФТА (Кнопка "Отправить" в форме): стандартный (base) */}
+                                        <button type="submit" disabled={isSubmitting} className="w-full bg-white text-black py-4 rounded-xl font-bold mt-2 active:scale-95 transition-all text-[16px]">
+                                            {isSubmitting ? 'Отправка...' : 'Отправить'}
                                         </button>
                                     </form>
                                 )}
                             </div>
                         </div>
                     )}
-
-                    {/* Формат и стоимость Modal */}
-                    {isPricingOpen && (
-                        <div 
-                            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-graphite/20 backdrop-blur-sm animate-fade-in-up"
-                            onTouchStart={onTouchStart}
-                            onTouchEnd={(e) => onTouchEnd(e, () => setIsPricingOpen(false))}
-                        >
-                            <div className="glass-panel w-full max-w-sm rounded-[2.5rem] p-8 relative shadow-2xl border-white" onClick={e => e.stopPropagation()}>
-                                <button 
-                                    onClick={() => { triggerHaptic(); setIsPricingOpen(false); }}
-                                    className="absolute top-6 right-6 text-graphite/50 hover:text-graphite transition-colors bg-white/50 p-2 rounded-full"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                                
-                                <h2 className="font-serif text-2xl mb-6 text-graphite flex items-center gap-2">
-                                    <Calendar className="w-6 h-6 text-sage" />
-                                    Стоимость
-                                </h2>
-                                
-                                <div className="space-y-3">
-                                    {CONFIG.pricing.map((item, idx) => (
-                                        <div key={idx} className="bg-white/60 p-4 rounded-2xl border border-white flex justify-between items-center">
-                                            <div>
-                                                <h3 className="font-medium text-graphite">{item.title}</h3>
-                                                <span className="text-xs text-graphite/60">{item.duration}</span>
-                                            </div>
-                                            <div className="font-serif text-lg text-sage">{item.price}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Полезное (Лид-магниты) Modal */}
-                    {isFreebiesOpen && (
-                        <div 
-                            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-graphite/20 backdrop-blur-sm animate-fade-in-up"
-                            onTouchStart={onTouchStart}
-                            onTouchEnd={(e) => onTouchEnd(e, () => setIsFreebiesOpen(false))}
-                        >
-                            <div className="glass-panel w-full max-w-sm rounded-[2.5rem] p-8 relative shadow-2xl border-white" onClick={e => e.stopPropagation()}>
-                                <button 
-                                    onClick={() => { triggerHaptic(); setIsFreebiesOpen(false); }}
-                                    className="absolute top-6 right-6 text-graphite/50 hover:text-graphite transition-colors bg-white/50 p-2 rounded-full"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                                
-                                <h2 className="font-serif text-2xl mb-6 text-graphite flex items-center gap-2">
-                                    <Leaf className="w-6 h-6 text-sage" />
-                                    Полезное
-                                </h2>
-                                
-                                <div className="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-2 overscroll-contain">
-                                    {CONFIG.freebies.map((item, idx) => (
-                                        <a 
-                                            key={idx} 
-                                            href={item.url}
-                                            target="_blank"
-                                            onClick={triggerHaptic}
-                                            className="block bg-white/60 p-4 rounded-2xl border border-white hover:bg-white/80 transition-colors active:scale-[0.98]"
-                                        >
-                                            <h3 className="font-medium text-graphite mb-1">{item.title}</h3>
-                                            <p className="text-xs text-graphite/70 leading-relaxed">{item.subtitle}</p>
-                                        </a>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                 </div>
             );
-        };
+        }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
